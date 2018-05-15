@@ -1,4 +1,7 @@
-# HR Employee Attrition Predictor
+# harvard and mit article
+# https://poseidon01.ssrn.com/delivery.php?ID=333026086024086016016095027067122093053092066027063087014082073064068075100104103006097025058123057012116084126112084094066066122015029086009007084008004118080092119090058007101011096090124127126015025070107124079107086096007007016119101027122026022105&EXT=pdf
+
+# edx predictor
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -20,7 +23,7 @@ from matplotlib.colors import ListedColormap
 
 def encodeOutputVariable(y):
     labelencoder_Y_Origin = LabelEncoder()
-    y = labelencoder_Y_Origin.fit_transform(y.astype(str))
+    y = labelencoder_Y_Origin.fit_transform(y.astype(str).replace("\ ", ""))
     return y
 
 def encodeCategoricalData(X, index):
@@ -31,7 +34,7 @@ def encodeCategoricalData(X, index):
 
 def encodeHotEncoder(X, numberOfCategories):
     onehotencoder = OneHotEncoder(categorical_features = [numberOfCategories])
-    X = onehotencoder.fit_transform(X.astype(str)).toarray()    
+    X = onehotencoder.fit_transform(X.astype(str).replace("\ ", "")).toarray()    
     X = X[:, 1:]
     return X
 
@@ -102,36 +105,34 @@ def creatingNeuralNetworkPredictor(X_train, y_train, X_test, y_test):
 
 # importing the data
 dataset = pd.read_csv("./data/appendix.csv")
-X = dataset.iloc[:, 2:34].values    
-y = dataset.iloc[:, 1].values
+X = dataset.iloc[:, 0:].values    
+X = np.delete(X, [4, 7, 10, 12], axis=1)
+y = dataset.iloc[:, 10].values
 
 # encode categorical data
-#X = encodeCategoricalData(X, 0)
-#X = encodeCategoricalData(X, 2)
-#X = encodeCategoricalData(X, 5)
-#X = encodeCategoricalData(X, 9)
-#X = encodeCategoricalData(X, 13)
-#X = encodeCategoricalData(X, 15)
-#X = encodeCategoricalData(X, 19)
-#X = encodeCategoricalData(X, 20)
-# 
-#X = encodeHotEncoder(X, 8)
-#y = encodeOutputVariable(y)
-#
+X = encodeCategoricalData(X, 0)
+X = encodeCategoricalData(X, 1)
+X = encodeCategoricalData(X, 2)
+X = encodeCategoricalData(X, 3)
+X = encodeCategoricalData(X, 5)
+ 
+X = encodeHotEncoder(X, 4)
+y = encodeOutputVariable(y)
+
 ## splitting the dataset into the training set and test set
-#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
-#
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
+
 ## feature scaling 
-#sc = StandardScaler(copy=True, with_mean=True, with_std=True)
-#X_train = sc.fit_transform(X_train)
-#X_test = sc.transform(X_test)
-#
+sc = StandardScaler(copy=True, with_mean=True, with_std=True)
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
 ## outputting data summary
-#print("Summary Info About the Dataset")
-#print("Does category contain null values?")
-#print(dataset.isnull().any(), "\n")
+print("Summary Info About the Dataset")
+print("Does category contain null values?")
+print(dataset.isnull().any(), "\n")
 #print("Said Yes to Attrition: ", y[(y == 1)].size)
 #print("Said No to Attrition:  ", y[(y == 0)].size)
 #print("Total responses:       ", y.size)
-#
+
 #creatingNeuralNetworkPredictor(X_train, y_train, X_test, y_test)
