@@ -5,25 +5,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-#import graphviz
-#import seaborn as sns
+import graphviz
+import seaborn as sns
 import sklearn.metrics as metrics
 
-#import plotly.offline as py
-#py.init_notebook_mode(connected=True)
-#import plotly.graph_objs as go
-#import plotly.tools as tls
+import plotly.offline as py
+py.init_notebook_mode(connected=True)
+import plotly.graph_objs as go
+import plotly.tools as tls
  
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
-from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import label_binarize
 from matplotlib.colors import ListedColormap
 
 def encodeOutputVariable(y):
     labelencoder_Y_Origin = LabelEncoder()
-    y = labelencoder_Y_Origin.fit_transform(y.astype(str).replace("\ ", ""))
+    y = labelencoder_Y_Origin.fit_transform(y.astype(str))
     return y
 
 def encodeCategoricalData(X, index):
@@ -32,25 +32,23 @@ def encodeCategoricalData(X, index):
     X[:, index] = labelencoder_X_Origin.fit_transform(X[:, index].astype(str))
     return X    
 
-def manualEncodeLongStrings(X):
+def manualEncodeLongStrings(X, column):
     index = 0
     test = 0
     keys = {}
     for row in X:
-        key = row[4].replace(", ", "").replace(" ", "")
+        print(row[4])
+        print(row[column])
+        key = row[column].replace(", ", "").replace(" ", "")
         if (keys.get(key) == None):
             keys[key] = index
             index += 1
-        X[test][4] = keys.get(key)
-        #print(X[test][4])
-        #print(key)
+        X[test][column] = keys.get(key)
         test += 1
     return X
     
 def encodeHotEncoder(X, numberOfCategories):
     onehotencoder = OneHotEncoder(categorical_features = [numberOfCategories])
-    print(X[0])
-    X = manualEncodeLongStrings(X)
     X = onehotencoder.fit_transform(X.astype(str)).toarray()    
     X = X[:, 1:]
     return X
@@ -69,10 +67,10 @@ def outputPredictorResults(y_test, y_pred, title):
     print(pd.crosstab(y_test.ravel(), y_pred.ravel(), rownames=['True'], colnames=['Predicted'], margins=True))
     print("\nClassification Report")
     print(metrics.classification_report(y_test, y_pred))
-    print("Zero One Loss: ", metrics.zero_one_loss(y_test, y_pred))
-    print("Log Loss:      ", metrics.log_loss(y_test, y_pred))
-    print("ROC AUC Score: ", metrics.roc_auc_score(y_test, y_pred, average="micro"))
-    graphROCCurve(y_test, y_pred, y)
+    #print("Zero One Loss: ", metrics.zero_one_loss(y_test, y_pred))
+    #print("Log Loss:      ", metrics.log_loss(y_test, y_pred))
+    #print("ROC AUC Score: ", metrics.roc_auc_score(y_test, y_pred, average="micro"))
+    #graphROCCurve(y_test, y_pred, y)
     
 def graphROCCurve(y_test, y_pred, y):    
     fpr = {}
@@ -96,43 +94,44 @@ def graphROCCurve(y_test, y_pred, y):
     plt.legend(loc="lower right")
     plt.show()
 
-# developing the Multi Layer Perceptron Neural Network
-def creatingNeuralNetworkPredictor(X_train, y_train, X_test, y_test):
+# developing the Multiple Linear Regression
+def creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test):
     # initialize the Multi Layer Perceptron Neural Network 
-    mlp_classifier = MLPClassifier(solver="adam", alpha=1e-5, max_iter=500,
-                               hidden_layer_sizes=(13, 13, 13))
+    regressor = LinearRegression()
     
     # fitting the Multi Layer Perceptron to the training set
-    mlp_classifier.fit(X_train, y_train)
+    regressor.fit(X_train, y_train)
     
     # Predicting the Test set results
-    mlp_y_pred = mlp_classifier.predict(X_test)
+    mult_y_pred = regressor.predict(X_test)
     
     # use the threshold of error to determine whether a prediction is valid
-    mlp_y_pred = (mlp_y_pred > 0.5)
+    mult_y_pred = (mult_y_pred > 0.5)
     
     # making the confusion matrix
-    cm = confusion_matrix(y_test.ravel(), mlp_y_pred.ravel())
+    cm = metrics.confusion_matrix(y_test.ravel(), mult_y_pred.ravel())
     
-    print("Training set Score: ", mlp_classifier.score(X_train, y_train))
-    print("Testing set Score: ", mlp_classifier.score(X_test, y_test))    
+    print("Training set Score: ", regressor.score(X_train, y_train))
+    print("Testing set Score: ", regressor.score(X_test, y_test))    
     
     # output results
-    outputPredictorResults(y_test, mlp_y_pred, "Neural Network")
+    outputPredictorResults(y_test, mult_y_pred, "Multiple Linear Regression")
 
 # importing the data
 dataset = pd.read_csv("./data/appendix.csv")
 X = dataset.iloc[:, 0:].values    
-X = np.delete(X, [4, 7, 10, 12], axis=1)
+X = np.delete(X, [4, 7, 10, 12, 14], axis=1)
 y = dataset.iloc[:, 10].values
+
+
 
 # encode categorical data
 X = encodeCategoricalData(X, 0)
 X = encodeCategoricalData(X, 1)
 X = encodeCategoricalData(X, 2)
 X = encodeCategoricalData(X, 3)
-X = encodeCategoricalData(X, 5)
- 
+X = encodeCategoricalData(X, 4)
+
 X = encodeHotEncoder(X, 4)
 y = encodeOutputVariable(y)
 
@@ -152,4 +151,4 @@ print(dataset.isnull().any(), "\n")
 #print("Said No to Attrition:  ", y[(y == 0)].size)
 #print("Total responses:       ", y.size)
 
-#creatingNeuralNetworkPredictor(X_train, y_train, X_test, y_test)
+creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test)
