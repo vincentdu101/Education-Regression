@@ -5,14 +5,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import graphviz
-import seaborn as sns
+#import graphviz
+#import seaborn as sns
 import sklearn.metrics as metrics
 
-import plotly.offline as py
-py.init_notebook_mode(connected=True)
-import plotly.graph_objs as go
-import plotly.tools as tls
+#import plotly.offline as py
+#py.init_notebook_mode(connected=True)
+#import plotly.graph_objs as go
+#import plotly.tools as tls
  
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -32,9 +32,26 @@ def encodeCategoricalData(X, index):
     X[:, index] = labelencoder_X_Origin.fit_transform(X[:, index].astype(str))
     return X    
 
+def manualEncodeLongStrings(X):
+    index = 0
+    test = 0
+    keys = {}
+    for row in X:
+        key = row[4].replace(", ", "").replace(" ", "")
+        if (keys.get(key) == None):
+            keys[key] = index
+            index += 1
+        X[test][4] = keys.get(key)
+        #print(X[test][4])
+        #print(key)
+        test += 1
+    return X
+    
 def encodeHotEncoder(X, numberOfCategories):
     onehotencoder = OneHotEncoder(categorical_features = [numberOfCategories])
-    X = onehotencoder.fit_transform(X.astype(str).replace("\ ", "")).toarray()    
+    print(X[0])
+    X = manualEncodeLongStrings(X)
+    X = onehotencoder.fit_transform(X.astype(str)).toarray()    
     X = X[:, 1:]
     return X
 
