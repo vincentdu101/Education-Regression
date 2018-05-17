@@ -1,6 +1,9 @@
 # harvard and mit article
 # https://poseidon01.ssrn.com/delivery.php?ID=333026086024086016016095027067122093053092066027063087014082073064068075100104103006097025058123057012116084126112084094066066122015029086009007084008004118080092119090058007101011096090124127126015025070107124079107086096007007016119101027122026022105&EXT=pdf
 
+# sklearn regression metrics
+# http://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics
+
 # edx predictor
 import numpy as np
 import matplotlib.pyplot as plt
@@ -60,39 +63,21 @@ def minimumDelay(x):
     return 0 if np.isnan(x) or x < 0 else x
 
 def outputPredictorResults(y_test, y_pred, title):
-    # output results for Neural network Classification
-    print("\nFor", title, "Classification")
-    print("Accuracy Score of Prediction : ", metrics.accuracy_score(y_test, y_pred) * 100)
-    print("\nConfusion Matrix")
-    print(pd.crosstab(y_test.ravel(), y_pred.ravel(), rownames=['True'], colnames=['Predicted'], margins=True))
-    print("\nClassification Report")
-    print(metrics.classification_report(y_test, y_pred))
-    #print("Zero One Loss: ", metrics.zero_one_loss(y_test, y_pred))
-    #print("Log Loss:      ", metrics.log_loss(y_test, y_pred))
-    #print("ROC AUC Score: ", metrics.roc_auc_score(y_test, y_pred, average="micro"))
-    #graphROCCurve(y_test, y_pred, y)
+    # output results for Multiple Linear Regression
+    print(title, "Analysis and Results")
+    print("Explained Variance Score: ", metrics.explained_variance_score(y_test, y_pred))
+    print("Mean Absolute Error: ", metrics.mean_absolute_error(y_test, y_pred))
+    print("Mean Squared Error: ", metrics.mean_squared_error(y_test, y_pred))
+    print("Mean Squared Logarithmic Error: ", metrics.mean_squared_log_error(y_test, y_pred))
+    print("Median Absolute Error: ", metrics.median_absolute_error(y_test, y_pred))
+    print("R2 Score: ", metrics.r2_score(y_test, y_pred))
     
-def graphROCCurve(y_test, y_pred, y):    
-    fpr = {}
-    tpr = {}
-    roc_auc = {}
     
-    # Compute micro-average ROC curve and ROC area
-    fpr["micro"], tpr["micro"], _ = metrics.roc_curve(y_test.ravel(), y_pred.ravel())
-    roc_auc["micro"] = metrics.auc(fpr["micro"], tpr["micro"])
-    
-    plt.figure()
-    lw = 2
-    plt.plot(fpr["micro"], tpr["micro"], color='darkorange',
-             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc["micro"])
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic')
-    plt.legend(loc="lower right")
-    plt.show()
+def graphRegressorResults(X_test, y_test, mult_y_pred):
+    plt.scatter(X_test, y_test, color="red")
+    plt.plot(X_test, mult_y_pred, color="blue")
+    plt.title("Predicted vs. Actual Certificates Rewarded")
+    plt.xlabel(")
 
 # developing the Multiple Linear Regression
 def creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test):
@@ -105,17 +90,11 @@ def creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test):
     # Predicting the Test set results
     mult_y_pred = regressor.predict(X_test)
     
-    # use the threshold of error to determine whether a prediction is valid
-    mult_y_pred = (mult_y_pred > 0.5)
-    
-    # making the confusion matrix
-    cm = metrics.confusion_matrix(y_test.ravel(), mult_y_pred.ravel())
-    
-    print("Training set Score: ", regressor.score(X_train, y_train))
-    print("Testing set Score: ", regressor.score(X_test, y_test))    
+    print("Coefficients: ", regressor.coef_)
     
     # output results
     outputPredictorResults(y_test, mult_y_pred, "Multiple Linear Regression")
+    graphRegressorResults(X_test, y_test, mult_y_pred)
 
 # importing the data
 dataset = pd.read_csv("./data/appendix.csv")
@@ -147,8 +126,5 @@ X_test = sc.transform(X_test)
 print("Summary Info About the Dataset")
 print("Does category contain null values?")
 print(dataset.isnull().any(), "\n")
-#print("Said Yes to Attrition: ", y[(y == 1)].size)
-#print("Said No to Attrition:  ", y[(y == 0)].size)
-#print("Total responses:       ", y.size)
 
 creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test)
