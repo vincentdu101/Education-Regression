@@ -74,10 +74,14 @@ def outputPredictorResults(y_test, y_pred, title):
     
     
 def graphRegressorResults(X_test, y_test, mult_y_pred):
-    plt.scatter(X_test, y_test, color="red")
-    plt.plot(X_test, mult_y_pred, color="blue")
+    numCases = []
+    [numCases.append(x) for x in range(0, len(X_test))]
+    plt.scatter(numCases, y_test, color="red")
+    plt.scatter(numCases, mult_y_pred, color="blue")
     plt.title("Predicted vs. Actual Certificates Rewarded")
-    plt.xlabel(")
+    plt.xlabel("Class Case")
+    plt.ylabel("Number of Certificates")
+    plt.show()
 
 # developing the Multiple Linear Regression
 def creatingMultipleLinearRegressionPredictor(X_train, y_train, X_test, y_test):
@@ -101,8 +105,6 @@ dataset = pd.read_csv("./data/appendix.csv")
 X = dataset.iloc[:, 0:].values    
 X = np.delete(X, [4, 7, 10, 12, 14], axis=1)
 y = dataset.iloc[:, 10].values
-
-
 
 # encode categorical data
 X = encodeCategoricalData(X, 0)
